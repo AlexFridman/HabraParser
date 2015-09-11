@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using HtmlAgilityPack;
 
 namespace HabraMiner
@@ -20,7 +21,7 @@ namespace HabraMiner
 
         public static DateTime ParseHabrFormatDate(string dateString)
         {
-            return DateTime.ParseExact(dateString, "dd MMMM yyyy � hh:mm", new CultureInfo("ru-RU"));
+            return DateTime.ParseExact(dateString, "dd MMMM yyyy в hh:mm", new CultureInfo("ru-RU"));
         }
     }
 }
