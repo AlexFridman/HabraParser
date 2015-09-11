@@ -10,26 +10,26 @@ namespace HabraMiner
 {
     public class PageLoader
     {
-        private readonly Queue<Task<Tuple<Uri, string>>> _taskQueue;
-        private readonly Action<Tuple<Uri, string>> _taskPostProcessor;
+        private readonly Queue<Task<PageDTO>> _taskQueue;
+        private readonly Action<PageDTO> _taskPostProcessor;
         private readonly string _userAgent;
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        public PageLoader(IEnumerable<Uri> uris,Action<Tuple<Uri, string>> taskPostProcessor, string userAgent)
+        public PageLoader(IEnumerable<Uri> uris,Action<PageDTO> taskPostProcessor, string userAgent)
         {
             _taskQueue = FormTaskQueue(uris);
             _taskPostProcessor = taskPostProcessor;
             _userAgent = userAgent;
         }
 
-        private Queue<Task<Tuple<Uri, string>>> FormTaskQueue(IEnumerable<Uri> uris)
+        private Queue<Task<PageDTO>> FormTaskQueue(IEnumerable<Uri> uris)
         {
-            var tasks = uris.Select(uri => new Task<Tuple<Uri, string>>(DownloadPage, uri));
+            var tasks = uris.Select(uri => new Task<PageDTO>(DownloadPage, uri));
 
-            return new Queue<Task<Tuple<Uri, string>>>(tasks);
+            return new Queue<Task<PageDTO>>(tasks);
         }
 
-        private Tuple<Uri, string> DownloadPage(object arg)
+        private PageDTO DownloadPage(object arg)
         {
             var uri = (Uri) arg;
 
@@ -40,7 +40,7 @@ namespace HabraMiner
                 var page = client.DownloadString(uri);
                 Logger.Info($"Downloaded {uri.AbsolutePath}");
 
-                return Tuple.Create(uri, page);
+                return new PageDTO(uri, page);
             }
             catch (Exception ex)
             {
@@ -61,14 +61,14 @@ namespace HabraMiner
             }
         }
 
-        private void TaskPostProcessing(Task<Tuple<Uri, string>> task)
+        private void TaskPostProcessing(Task<PageDTO> task)
         {
             if (task.Exception != null)
             {
                 return;
             }
 
-            
+            var result = task.Result;
 
             try
             {
@@ -76,7 +76,7 @@ namespace HabraMiner
             }
             catch (Exception ex)
             {
-                Logger.Error($"Unsuccessful post processing {task.Result.Item1.AbsolutePath}");
+                Logger.Error($"Unsuccessful post processing {result.Uri.AbsolutePath}");
             }
         }
     }
