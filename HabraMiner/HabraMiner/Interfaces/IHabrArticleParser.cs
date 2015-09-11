@@ -1,4 +1,4 @@
-﻿namespace HabraMiner
+﻿namespace HabraMiner.Interfaces
 {
     public interface IHabrArticleParser
     {
