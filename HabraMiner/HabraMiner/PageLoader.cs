@@ -5,24 +5,19 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
-using NLog.Fluent;
 
 namespace HabraMiner
 {
     public class PageLoader
     {
-        private readonly int _threadCount;
         private readonly Queue<Task<string>> _taskQueue;
-        private readonly int _dealay;
         private readonly Action<string> _taskPostProcessor;
         private readonly string _userAgent;
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        public PageLoader(int threadCount, IEnumerable<Uri> uris, int dealay, Action<string> taskPostProcessor, string userAgent)
+        public PageLoader(IEnumerable<Uri> uris,Action<string> taskPostProcessor, string userAgent)
         {
-            _threadCount = threadCount;
             _taskQueue = FormTaskQueue(uris);
-            _dealay = dealay;
             _taskPostProcessor = taskPostProcessor;
             _userAgent = userAgent;
         }
