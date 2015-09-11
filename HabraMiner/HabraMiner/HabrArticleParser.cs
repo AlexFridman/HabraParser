@@ -1,81 +1,73 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using HabraMiner.Interfaces;
 using HtmlAgilityPack;
 
 namespace HabraMiner
 {
-    internal class HabrArticleParser : IHabrArticleParser
+    class HabrArticleParser : IHabrArticleParser
     {
         public Article Parse(string data)
         {
-            var html = ConstructHtmlDocument(data);
+            Article article = new Article();
 
-            var articleNode = html.DocumentNode.GetElementByClassName("post shortcuts_item");
+            HtmlDocument html = new HtmlDocument();
+            html.LoadHtml(data);
+            HtmlNode articleNode = html.DocumentNode.GetElementByAttributeValue("post shortcuts_item");
 
-            var article = new Article
+            article.Name = articleNode.GetElementByAttributeValue("post_title").InnerText;
+
+            article.Date = HtmlHelpers.ParseHabrFormatDate(articleNode.GetElementByAttributeValue("published").InnerText);
+            
+            article.Habs = new List<string>();
+            var habs = articleNode.GetElementByAttributeValue("hubs").ChildNodes.Where(n => n.Name == "a");
+            foreach (var hab in habs)
             {
-                Name = ExtractName(articleNode),
-                Date = ExtractDate(articleNode),
-                Habs = ExtractHabs(articleNode),
-                Rating = ExtractRating(articleNode),
-                Views = ExtractView(articleNode),
-                Favourites = ExtractFavourites(articleNode)
-            };
+                article.Habs.Add(hab.InnerText);
+            }
 
-
-            // TODO parse tags
             article.Tags = new List<string>();
-            var tags = articleNode.GetElementByClassName("tags").ChildNodes.First(n => n.Name == "li")
+            var tags = articleNode.GetElementByAttributeValue("tags").ChildNodes.First(n => n.Name == "li")
                 .ChildNodes.First(n => n.Name == "a");
 
-            // TODO add author props
-            article.Author = articleNode.GetElementByClassName("author-info__name").InnerText;
+            article.Rating = int.Parse(articleNode.GetElementByAttributeValue("voting-wjt__counter-score js-score").InnerText);
+            article.Views = int.Parse(articleNode.GetElementByAttributeValue("views-count_post").InnerText);
+            article.Favourites = int.Parse(articleNode.GetElementByAttributeValue("favorite-wjt__counter js-favs_count").InnerText);
 
+            //TODO check other comments
+            article.CodeComments = articleNode.GetElementsByAttributeValue("nginx").Select(n => n.InnerText).ToList();
+
+            var codeNotes = articleNode.GetElementsByAttributeValue("nginx");
+            foreach (var node in codeNotes)
+            {
+                node.Remove();
+            }
+            codeNotes = articleNode.GetElementsByAttributeValue("bash");
+            foreach (var node in codeNotes)
+            {
+                node.Remove();
+            }
+
+            var imageNotes = articleNode.GetElementsByClassName("img");
+            foreach (var image in imageNotes)
+            {
+                image.Remove();
+            }
+
+            // TODO add author props
+            article.Author = articleNode.GetElementByAttributeValue("author-info__name").InnerText;
+            
             // this is html, not text
             // TODO parse Text
-            article.Text = articleNode.GetElementByClassName("content html_format").InnerHtml;
+            article.Text = articleNode.GetElementByAttributeValue("content html_format").InnerText;
 
-            return null;
+            return article;
         }
 
-        private static int ExtractFavourites(HtmlNode articleNode)
-        {
-            return int.Parse(articleNode.GetElementByClassName("favorite-wjt__counter js-favs_count").InnerText);
-        }
-
-        private static int ExtractView(HtmlNode articleNode)
-        {
-            return int.Parse(articleNode.GetElementByClassName("views-count_post").InnerText);
-        }
-
-        private static int ExtractRating(HtmlNode articleNode)
-        {
-            return int.Parse(articleNode.GetElementByClassName("voting-wjt__counter-score js-score").InnerText);
-        }
-
-        private static string ExtractName(HtmlNode articleNode)
-        {
-            return articleNode.GetElementByClassName("post_title").InnerText;
-        }
-
-        private static DateTime ExtractDate(HtmlNode articleNode)
-        {
-            return HtmlHelpers.ParseHabrFormatDate(articleNode.GetElementByClassName("published").InnerText);
-        }
-
-        private static ICollection<string> ExtractHabs(HtmlNode articleNode)
-        {
-            var habsNodes = articleNode.GetElementByClassName("hubs").ChildNodes.Where(n => n.Name == "a");
-            return habsNodes.Select(hab => hab.InnerText).ToList();
-        }
-
-        private static HtmlDocument ConstructHtmlDocument(string data)
-        {
-            var html = new HtmlDocument();
-            html.LoadHtml(data);
-            return html;
-        }
+        
     }
 }
