@@ -58,6 +58,24 @@ namespace HabraMiner
             set { InternalDocument["Number"] = value; }
         }
 
+        public int Rating
+        {
+            get { return InternalDocument["Rating"].AsInt32; }
+            set { InternalDocument["Rating"] = value; }
+        }
+
+        public int Views
+        {
+            get { return InternalDocument["Views"].AsInt32; }
+            set { InternalDocument["Views"] = value; }
+        }
+
+        public int Favourites
+        {
+            get { return InternalDocument["Favourites"].AsInt32; }
+            set { InternalDocument["Favourites"] = value; }
+        }
+
         public BsonDocument InternalDocument { get; set; }
     }
 }
