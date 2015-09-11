@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
@@ -13,10 +14,17 @@ namespace HabraMiner
         private readonly Queue<Task<PageDTO>> _taskQueue;
         private readonly Action<PageDTO> _taskPostProcessor;
         private readonly string _userAgent;
+        private readonly Encoding _encoding;
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        public PageLoader(IEnumerable<Uri> uris,Action<PageDTO> taskPostProcessor, string userAgent)
+
+        public PageLoader(IEnumerable<Uri> uris, Action<PageDTO> taskPostProcessor, string userAgent)
+            : this(uris, taskPostProcessor, userAgent, Encoding.UTF8)
+        { }
+
+        public PageLoader(IEnumerable<Uri> uris,Action<PageDTO> taskPostProcessor, string userAgent, Encoding encoding)
         {
+            _encoding = encoding;
             _taskQueue = FormTaskQueue(uris);
             _taskPostProcessor = taskPostProcessor;
             _userAgent = userAgent;
@@ -35,7 +43,11 @@ namespace HabraMiner
 
             try
             {
-                var client = new WebClient {Headers = {["User-Agent"] = _userAgent}};
+                var client = new WebClient
+                {
+                    Headers = {["User-Agent"] = _userAgent},
+                    Encoding = _encoding
+                };
 
                 var page = client.DownloadString(uri);
                 Logger.Info($"Downloaded {uri.AbsolutePath}");
