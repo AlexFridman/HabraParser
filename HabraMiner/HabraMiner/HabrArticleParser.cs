@@ -17,35 +17,55 @@ namespace HabraMiner
 
             HtmlDocument html = new HtmlDocument();
             html.LoadHtml(data);
-            HtmlNode articleNode = html.DocumentNode.GetElementByClassName("post shortcuts_item");
+            HtmlNode articleNode = html.DocumentNode.GetElementByAttributeValue("post shortcuts_item");
 
-            article.Name = articleNode.GetElementByClassName("post_title").InnerText;
+            article.Name = articleNode.GetElementByAttributeValue("post_title").InnerText;
 
-            article.Date = HtmlHelpers.ParseHabrFormatDate(articleNode.GetElementByClassName("published").InnerText);
+            article.Date = HtmlHelpers.ParseHabrFormatDate(articleNode.GetElementByAttributeValue("published").InnerText);
             
             article.Habs = new List<string>();
-            var habs = articleNode.GetElementByClassName("hubs").ChildNodes.Where(n => n.Name == "a");
+            var habs = articleNode.GetElementByAttributeValue("hubs").ChildNodes.Where(n => n.Name == "a");
             foreach (var hab in habs)
             {
                 article.Habs.Add(hab.InnerText);
             }
 
             article.Tags = new List<string>();
-            var tags = articleNode.GetElementByClassName("tags").ChildNodes.First(n => n.Name == "li")
+            var tags = articleNode.GetElementByAttributeValue("tags").ChildNodes.First(n => n.Name == "li")
                 .ChildNodes.First(n => n.Name == "a");
 
-            article.Rating = int.Parse(articleNode.GetElementByClassName("voting-wjt__counter-score js-score").InnerText);
-            article.Views = int.Parse(articleNode.GetElementByClassName("views-count_post").InnerText);
-            article.Favourites = int.Parse(articleNode.GetElementByClassName("favorite-wjt__counter js-favs_count").InnerText);
+            article.Rating = int.Parse(articleNode.GetElementByAttributeValue("voting-wjt__counter-score js-score").InnerText);
+            article.Views = int.Parse(articleNode.GetElementByAttributeValue("views-count_post").InnerText);
+            article.Favourites = int.Parse(articleNode.GetElementByAttributeValue("favorite-wjt__counter js-favs_count").InnerText);
+
+            //TODO check other comments
+            article.CodeComments = articleNode.GetElementsByAttributeValue("nginx").Select(n => n.InnerText).ToList();
+
+            var codeNotes = articleNode.GetElementsByAttributeValue("nginx");
+            foreach (var node in codeNotes)
+            {
+                node.Remove();
+            }
+            codeNotes = articleNode.GetElementsByAttributeValue("bash");
+            foreach (var node in codeNotes)
+            {
+                node.Remove();
+            }
+
+            var imageNotes = articleNode.GetElementsByClassName("img");
+            foreach (var image in imageNotes)
+            {
+                image.Remove();
+            }
 
             // TODO add author props
-            article.Author = articleNode.GetElementByClassName("author-info__name").InnerText;
+            article.Author = articleNode.GetElementByAttributeValue("author-info__name").InnerText;
             
             // this is html, not text
             // TODO parse Text
-            article.Text = articleNode.GetElementByClassName("content html_format").InnerHtml;
+            article.Text = articleNode.GetElementByAttributeValue("content html_format").InnerText;
 
-            return null;
+            return article;
         }
 
         
