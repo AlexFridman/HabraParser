@@ -26,5 +26,10 @@ namespace HabraMiner
         public int Rating { get; set; }
         public int Views { get; set; }
         public int Favourites { get; set; }
+
+        public BsonDocumentWrapper ToBson()
+        {
+            return new BsonDocumentWrapper(this);
+        }
     }
 }
