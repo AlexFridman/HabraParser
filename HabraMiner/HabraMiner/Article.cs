@@ -12,5 +12,6 @@ namespace HabraMiner
         public DateTime Date { get; set; }
         public string Text { get; set; }
         public ICollection<string> CodeComments { get; set; }
+        public int Number { get; set; }
     }
 }
