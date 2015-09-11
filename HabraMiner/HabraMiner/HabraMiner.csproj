@@ -68,7 +68,6 @@
     <Compile Include="HabrArticleParser.cs" />
     <Compile Include="HtmlHelpers.cs" />
     <Compile Include="Interfaces\IHabrArticleParser.cs" />
-    <Compile Include="Interfaces\IMongoEntity.cs" />
     <Compile Include="PageDTO.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
