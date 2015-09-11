@@ -5,36 +5,31 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
-using NLog.Fluent;
 
 namespace HabraMiner
 {
     public class PageLoader
     {
-        private readonly int _threadCount;
-        private readonly Queue<Task<string>> _taskQueue;
-        private readonly int _dealay;
-        private readonly Action<string> _taskPostProcessor;
+        private readonly Queue<Task<PageDTO>> _taskQueue;
+        private readonly Action<PageDTO> _taskPostProcessor;
         private readonly string _userAgent;
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        public PageLoader(int threadCount, IEnumerable<Uri> uris, int dealay, Action<string> taskPostProcessor, string userAgent)
+        public PageLoader(IEnumerable<Uri> uris,Action<PageDTO> taskPostProcessor, string userAgent)
         {
-            _threadCount = threadCount;
             _taskQueue = FormTaskQueue(uris);
-            _dealay = dealay;
             _taskPostProcessor = taskPostProcessor;
             _userAgent = userAgent;
         }
 
-        private Queue<Task<string>> FormTaskQueue(IEnumerable<Uri> uris)
+        private Queue<Task<PageDTO>> FormTaskQueue(IEnumerable<Uri> uris)
         {
-            var tasks = uris.Select(uri => new Task<string>(DownloadPage, uri));
+            var tasks = uris.Select(uri => new Task<PageDTO>(DownloadPage, uri));
 
-            return new Queue<Task<string>>(tasks);
+            return new Queue<Task<PageDTO>>(tasks);
         }
 
-        private string DownloadPage(object arg)
+        private PageDTO DownloadPage(object arg)
         {
             var uri = (Uri) arg;
 
@@ -45,7 +40,7 @@ namespace HabraMiner
                 var page = client.DownloadString(uri);
                 Logger.Info($"Downloaded {uri.AbsolutePath}");
 
-                return page;
+                return new PageDTO(uri, page);
             }
             catch (Exception ex)
             {
@@ -66,7 +61,7 @@ namespace HabraMiner
             }
         }
 
-        private void TaskPostProcessing(Task<string> task)
+        private void TaskPostProcessing(Task<PageDTO> task)
         {
             if (task.Exception != null)
             {
@@ -75,7 +70,14 @@ namespace HabraMiner
 
             var result = task.Result;
 
-            _taskPostProcessor(result);
+            try
+            {
+                _taskPostProcessor(task.Result);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Unsuccessful post processing {result.Uri.AbsolutePath}");
+            }
         }
     }
 }
