@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using HabraMiner.Articles;
+using NLog;
 
 namespace HabraMiner.PageDownloadTasks
 {
@@ -34,7 +35,6 @@ namespace HabraMiner.PageDownloadTasks
         {
             return new Task<string>(() =>
             {
-                Console.WriteLine("foo");
                 var client = new WebClient
                 {
                     Headers = {["User-Agent"] = userAgent},
