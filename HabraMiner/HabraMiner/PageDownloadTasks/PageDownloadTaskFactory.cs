@@ -11,14 +11,14 @@ namespace HabraMiner.PageDownloadTasks
         public const string DefaultUserAgent = "";
 
         public static PageDownloadTaskBase CreateDownloadTask(Uri uri, Encoding encoding,
-            string userAgent = DefaultUserAgent, int delay = 0)
+            string userAgent = DefaultUserAgent)
         {
             if (IsHabrUri(uri))
             {
                 return new HabrDownloadTask
                 {
                     Uri = uri,
-                    DownloadTask = CreateDownloadPageContentTask(uri, encoding, userAgent, delay)
+                    DownloadTask = CreateDownloadPageContentTask(uri, encoding, userAgent)
                 };
             }
         return new HabrDownloadTask();
