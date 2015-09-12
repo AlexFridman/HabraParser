@@ -4,9 +4,9 @@ using System.Linq;
 using HabraMiner.Interfaces;
 using MongoDB.Bson;
 
-namespace HabraMiner
+namespace HabraMiner.Articles
 {
-    public class Article
+    public class HabrArticle : ArticleBase
     {
         public string Author { get; set; }
 
@@ -30,6 +30,11 @@ namespace HabraMiner
         public BsonDocumentWrapper ToBson()
         {
             return new BsonDocumentWrapper(this);
+        }
+
+        public override ArticleBase Parse(string data)
+        {
+            throw new NotImplementedException();
         }
     }
 }
