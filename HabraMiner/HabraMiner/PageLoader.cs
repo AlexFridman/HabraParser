@@ -86,13 +86,21 @@ namespace HabraMiner
         }
 
 
-        private void RunTasksWithDelay(PageDownloadTask<TArticle>[] tasks, int delay)
+        private void RunTasksWithDelay(IEnumerable<PageDownloadTask<TArticle>> tasks, int delay)
         {
             foreach (var pageDownloadTask in tasks)
             {
-                pageDownloadTask.DownloadTask.ContinueWith(TaskPostProcessing, pageDownloadTask);
-                pageDownloadTask.DownloadTask.Start();
-                Console.WriteLine("Task runned");
+                try
+                {
+                    pageDownloadTask.DownloadTask.ContinueWith(TaskPostProcessing, pageDownloadTask);
+                    pageDownloadTask.DownloadTask.Start();
+                    Logger.Info("Task runned");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("пиздец");
+                }
+                
                 Thread.Sleep(delay);
             }
         }
