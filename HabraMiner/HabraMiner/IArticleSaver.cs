@@ -7,7 +7,7 @@ using HabraMiner.Articles;
 
 namespace HabraMiner
 {
-    public interface IArticleSaver<TArticle>
+    public interface IArticleSaver<in TArticle>
     {
         void Save(TArticle article);
     }
