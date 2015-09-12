@@ -1,6 +1,6 @@
 ﻿namespace HabraMiner.PageDownloadTasks
 {
-    public class HabtDownloadTask : PageDownloadTaskBase
+    public class HabrDownloadTask : PageDownloadTaskBase
     {
     }
 }
