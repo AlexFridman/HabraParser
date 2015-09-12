@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HabraMiner.PageDownloadTasks
@@ -32,7 +33,7 @@ namespace HabraMiner.PageDownloadTasks
         {
             return new Task<string>(() =>
             {
-                Task.Delay(delay);
+                Thread.Sleep(delay);
                 var client = new WebClient
                 {
                     Headers = {["User-Agent"] = userAgent },
