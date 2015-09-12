@@ -59,7 +59,7 @@ namespace HabraMiner
             var pageDownloadTask = (PageDownloadTask<TArticle>) pPageDownloadTask;
             var uri = pageDownloadTask.Uri;
 
-            if (task.Exception != null)
+            if (task.Exception != null || string.IsNullOrEmpty(task.Result))
             {
                 Logger.Error($"Unsuccessful downloading {uri.AbsolutePath}");
             }
