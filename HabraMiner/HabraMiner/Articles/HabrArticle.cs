@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HabraMiner
+namespace HabraMiner.Articles
 {
-    public class Article
+    public class HabrArticle : BaseArticle
     {
         public string Author { get; set; }
         public string Name { get; set; }
