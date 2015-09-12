@@ -26,8 +26,9 @@ namespace HabraMiner.PageDownloadTasks
             {
                 throw new Exception("Task not completed");
             }
-
-            return (TArticle)Article.Parse(DownloadTask.Result);
+            var parsed = Article.Parse(DownloadTask.Result);
+            parsed.Uri = Uri;
+            return (TArticle)parsed;
         }
     }
 }
