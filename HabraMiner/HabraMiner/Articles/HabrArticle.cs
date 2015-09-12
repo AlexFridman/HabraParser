@@ -30,11 +30,6 @@ namespace HabraMiner.Articles
         public int Views { get; set; }
         public int Favourites { get; set; }
 
-        public BsonDocumentWrapper ToBson()
-        {
-            return new BsonDocumentWrapper(this);
-        }
-
         public override ArticleBase Parse(string data)
         {
             return HabrParser.Parse(data);
