@@ -1,7 +1,6 @@
-﻿using HabraMiner.Articles;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 
-namespace HabraMiner
+namespace HabraMiner.Storage
 {
     public class MongoArticleSaver<TArticle> : IArticleSaver<TArticle>
     {
