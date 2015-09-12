@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using System.Threading;
-using HabraMiner.PageDownloadTasks;
+using System.Threading.Tasks;
 
 namespace HabraMiner
 {
-    internal class Program
+    class Program
     {
-        private static void Main(string[] args)
+        static void Main(string[] args)
         {
         }
     }
