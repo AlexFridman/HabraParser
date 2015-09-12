@@ -76,7 +76,7 @@ namespace HabraMiner
         }
 
 
-        public void RunTasksWithDelay(PageDownloadTask<ArticleBase>[] tasks, int delay)
+        private void RunTasksWithDelay(PageDownloadTask<ArticleBase>[] tasks, int delay)
         {
             foreach (var pageDownloadTask in tasks)
             {
