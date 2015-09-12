@@ -12,17 +12,19 @@ namespace HabraMiner
     public class PageLoader
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly PageDownloadTask<HabrArticle>[] _tasks;
+        private readonly PageDownloadTask<ArticleBase>[] _tasks;
+        private readonly Action<ArticleBase> _saveRoutine;
 
-        public PageLoader(IEnumerable<PageDownloadTask<HabrArticle>> downloadTasks)
+        public PageLoader(IEnumerable<PageDownloadTask<ArticleBase>> downloadTasks, Action<ArticleBase> saveRoutine)
         {
             _tasks = downloadTasks.ToArray();
+            _saveRoutine = saveRoutine;
         }
 
 
         public void RunAllDellayedTasks(int delay)
         {
-            Task.Run(() => new TaskRunner().RunTasksWithDelay(_tasks, delay));
+            Task.Run(() => RunTasksWithDelay(_tasks, delay));
             var timeout = TimeSpan.FromMinutes(1);
             var tasks = _tasks.Select(t => t.DownloadTask).ToArray();
             var finishedTasksCount = 0;
@@ -38,34 +40,34 @@ namespace HabraMiner
             }
         }
 
-        private PageDownloadTask<HabrArticle>[] GetCompletedTasks()
+        private PageDownloadTask<ArticleBase>[] GetCompletedTasks()
         {
             var completedTasks = _tasks.Where(t => t.DownloadTask.IsCompleted);
 
             return completedTasks.ToArray();
         }
 
-        private PageDownloadTask<HabrArticle>[] GetFaultedTasks()
+        private PageDownloadTask<ArticleBase>[] GetFaultedTasks()
         {
             var faultedTasks = _tasks.Where(t => t.DownloadTask.IsFaulted);
 
             return faultedTasks.ToArray();
         }
 
-        private static void TaskPostProcessing(Task<string> task, object pPageDownloadTask)
+        private void TaskPostProcessing(Task<string> task, object pPageDownloadTask)
         {
-            var pageDownloadTask = (PageDownloadTask<HabrArticle>) pPageDownloadTask;
+            var pageDownloadTask = (PageDownloadTask<ArticleBase>) pPageDownloadTask;
             var uri = pageDownloadTask.Uri;
 
             if (task.Exception != null)
             {
-                // TODO: Log
+                Logger.Error($"Unsuccessful downloading {uri.AbsolutePath}");
             }
 
             try
             {
                 var article = pageDownloadTask.ParceArticle();
-                // TODO: save
+                _saveRoutine(article);
             }
             catch (Exception ex)
             {
@@ -73,17 +75,15 @@ namespace HabraMiner
             }
         }
 
-        private class TaskRunner
-        {
-            public void RunTasksWithDelay(PageDownloadTask<HabrArticle>[] tasks, int delay)
-            {
-                foreach (var pageDownloadTask in tasks)
-                {
-                    pageDownloadTask.DownloadTask.ContinueWith(TaskPostProcessing, pageDownloadTask);
-                    pageDownloadTask.DownloadTask.Start();
 
-                    Thread.Sleep(delay);
-                }
+        public void RunTasksWithDelay(PageDownloadTask<ArticleBase>[] tasks, int delay)
+        {
+            foreach (var pageDownloadTask in tasks)
+            {
+                pageDownloadTask.DownloadTask.ContinueWith(TaskPostProcessing, pageDownloadTask);
+                pageDownloadTask.DownloadTask.Start();
+
+                Thread.Sleep(delay);
             }
         }
     }
