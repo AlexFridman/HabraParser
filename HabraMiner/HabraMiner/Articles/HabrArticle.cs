@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HabraMiner.Exceptions;
 using HtmlAgilityPack;
 using MongoDB.Bson;
 
@@ -44,6 +45,10 @@ namespace HabraMiner.Articles
                 var article = new HabrArticle();
 
                 var articleNode = GetArticleNode(html);
+                if (articleNode == null)
+                {
+                    throw new NotFoundException();
+                }
                 article.Name = ExtractName(articleNode);
                 article.Date = ExtractDate(articleNode); //TODO : обойти  nginx
                 article.Hubs = ExtractHabs(articleNode);
