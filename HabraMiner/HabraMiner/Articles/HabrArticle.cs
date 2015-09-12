@@ -13,5 +13,10 @@ namespace HabraMiner.Articles
         public string Text { get; set; }
         public ICollection<string> CodeComments { get; set; }
         public int Number { get; set; }
+
+        public override ArticleBase Parse(string data)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

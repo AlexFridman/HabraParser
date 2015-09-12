@@ -2,8 +2,10 @@
 
 namespace HabraMiner.Articles
 {
-    public class ArticleBase
+    public abstract class ArticleBase
     {
-        public Uri Uri { get; set; } 
+        public Uri Uri { get; set; }
+
+        public abstract ArticleBase Parse(string data);
     }
 }

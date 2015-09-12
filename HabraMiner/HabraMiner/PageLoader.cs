@@ -1,94 +1,89 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using HabraMiner.Articles;
+using HabraMiner.PageDownloadTasks;
 using NLog;
 
 namespace HabraMiner
 {
     public class PageLoader
     {
-        private readonly Queue<Task<PageDTO>> _taskQueue;
-        private readonly Action<PageDTO> _taskPostProcessor;
-        private readonly string _userAgent;
-        private readonly Encoding _encoding;
-
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private readonly PageDownloadTask<HabrArticle>[] _tasks;
 
-        public PageLoader(IEnumerable<Uri> uris, Action<PageDTO> taskPostProcessor, string userAgent)
-            : this(uris, taskPostProcessor, userAgent, Encoding.UTF8)
-        { }
-
-        public PageLoader(IEnumerable<Uri> uris,Action<PageDTO> taskPostProcessor, string userAgent, Encoding encoding)
+        public PageLoader(IEnumerable<PageDownloadTask<HabrArticle>> downloadTasks)
         {
-            _encoding = encoding;
-            _taskQueue = FormTaskQueue(uris);
-            _taskPostProcessor = taskPostProcessor;
-            _userAgent = userAgent;
+            _tasks = downloadTasks.ToArray();
         }
 
-        private Queue<Task<PageDTO>> FormTaskQueue(IEnumerable<Uri> uris)
+
+        public void RunAllDellayedTasks(int delay)
         {
-            var tasks = uris.Select(uri => new Task<PageDTO>(DownloadPage, uri));
-
-            return new Queue<Task<PageDTO>>(tasks);
-        }
-
-        private PageDTO DownloadPage(object arg)
-        {
-            var uri = (Uri) arg;
-
-            try
+            Task.Run(() => new TaskRunner().RunTasksWithDelay(_tasks, delay));
+            var timeout = TimeSpan.FromMinutes(1);
+            var tasks = _tasks.Select(t => t.DownloadTask).ToArray();
+            var finishedTasksCount = 0;
+            while (finishedTasksCount < tasks.Length)
             {
-                var client = new WebClient
-                {
-                    Headers = {["User-Agent"] = _userAgent},
-                    Encoding = _encoding
-                };
+                Task.WaitAny(tasks, timeout);
 
-                var page = client.DownloadString(uri);
-                Logger.Info($"Downloaded {uri.AbsolutePath}");
+                var completedTasks = GetCompletedTasks();
+                var faultedTasks = GetFaultedTasks();
 
-                return new PageDTO(uri, page);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Not downloaded {uri.AbsolutePath}");
 
-                throw;
+                finishedTasksCount += (completedTasks.Length + faultedTasks.Length);
             }
         }
 
-        public void RunAllWithDelay(int delay)
+        private PageDownloadTask<HabrArticle>[] GetCompletedTasks()
         {
-            foreach (var task in _taskQueue)
-            {
-                task.ContinueWith(TaskPostProcessing);
-                task.Start();
+            var completedTasks = _tasks.Where(t => t.DownloadTask.IsCompleted);
 
-                Thread.Sleep(delay);
-            }
+            return completedTasks.ToArray();
         }
 
-        private void TaskPostProcessing(Task<PageDTO> task)
+        private PageDownloadTask<HabrArticle>[] GetFaultedTasks()
         {
+            var faultedTasks = _tasks.Where(t => t.DownloadTask.IsFaulted);
+
+            return faultedTasks.ToArray();
+        }
+
+        private static void TaskPostProcessing(Task<string> task, object pPageDownloadTask)
+        {
+            var pageDownloadTask = (PageDownloadTask<HabrArticle>) pPageDownloadTask;
+            var uri = pageDownloadTask.Uri;
+
             if (task.Exception != null)
             {
-                return;
+                // TODO: Log
             }
-
-            var result = task.Result;
 
             try
             {
-                _taskPostProcessor(task.Result);
+                var article = pageDownloadTask.ParceArticle();
+                // TODO: save
             }
             catch (Exception ex)
             {
-                Logger.Error($"Unsuccessful post processing {result.Uri.AbsolutePath}");
+                Logger.Error($"Unsuccessful post processing {uri.AbsolutePath}");
+            }
+        }
+
+        private class TaskRunner
+        {
+            public void RunTasksWithDelay(PageDownloadTask<HabrArticle>[] tasks, int delay)
+            {
+                foreach (var pageDownloadTask in tasks)
+                {
+                    pageDownloadTask.DownloadTask.ContinueWith(TaskPostProcessing, pageDownloadTask);
+                    pageDownloadTask.DownloadTask.Start();
+
+                    Thread.Sleep(delay);
+                }
             }
         }
     }
