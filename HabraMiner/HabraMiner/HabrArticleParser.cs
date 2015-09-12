@@ -29,18 +29,11 @@ namespace HabraMiner
             DeleteImageNodes(articleNode);
 
             DeleteCodeNodes(articleNode);
-            var articleComments = ExtractArticleComments(html);
-
             // this is html, not text
             // TODO parse Text
             article.Text = articleNode.GetElementByAttributeValue("content html_format").InnerText;
 
             return article;
-        }
-
-        private ICollection<string> ExtractArticleComments(HtmlDocument html)
-        {
-            return HtmlHelpers.GetElementsByClassName(html, "message html_format ");
         }
 
         private static void DeleteCodeNodes(HtmlNode articleNode)
