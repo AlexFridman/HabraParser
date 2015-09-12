@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using HabraMiner.Articles;
+using HabraMiner.Exceptions;
 using HabraMiner.PageDownloadTasks;
 using NLog;
 
@@ -63,12 +64,16 @@ namespace HabraMiner
             {
                 Logger.Error($"Unsuccessful downloading {uri.AbsolutePath}");
             }
-            
+
             try
             {
 
                 var article = pageDownloadTask.ParceArticle();
-                _saveRoutine((TArticle)article);
+                _saveRoutine((TArticle) article);
+            }
+            catch (NotFoundException ex)
+            {
+                Logger.Error($"Unsuccessful post downloading (404) {uri.AbsolutePath}");
             }
             catch (Exception ex)
             {
