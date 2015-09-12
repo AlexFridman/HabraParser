@@ -5,17 +5,19 @@ namespace HabraMiner
 {
     public class MongoArticleSaver<TArticle> : IArticleSaver<TArticle>
     {
-        private readonly IMongoCollection<TArticle> _collection;
+        private readonly MongoCollection<TArticle> _collection;
 
-        public MongoArticleSaver(string connectionString, string databaseName, string collectionName)
+
+        public MongoArticleSaver(string adress, int port, string databaseName, string collectionName)
         {
-            var client = new MongoClient(connectionString);
-            var database = client.GetDatabase(databaseName);
+            var settings = new MongoServerSettings {Server = new MongoServerAddress(adress, port)};
+            var server = new MongoServer(settings);
+            var database = server.GetDatabase(databaseName);
             _collection = database.GetCollection<TArticle>(collectionName);
         }
         public void Save(TArticle article)
         {
-            _collection.InsertOneAsync(article);
+            _collection.Save(article);
         }
     }
 }
