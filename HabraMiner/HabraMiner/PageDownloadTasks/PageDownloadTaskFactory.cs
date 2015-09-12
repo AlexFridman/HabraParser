@@ -32,8 +32,7 @@ namespace HabraMiner.PageDownloadTasks
         private static Task<string> CreateDownloadPageContentTask(Uri uri, Encoding encoding, string userAgent, int delay = 0)
         {
             return new Task<string>(() =>
-            {
-                Thread.Sleep(delay);
+            { 
                 var client = new WebClient
                 {
                     Headers = {["User-Agent"] = userAgent },
