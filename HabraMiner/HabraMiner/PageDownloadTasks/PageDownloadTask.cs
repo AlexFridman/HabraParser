@@ -4,8 +4,9 @@ using HabraMiner.Articles;
 
 namespace HabraMiner.PageDownloadTasks
 {
-    public class PageDownloadTask<TArticle> where TArticle : ArticleBase, new()
+    public class PageDownloadTask<TArticle> where TArticle : ArticleBase
     {
+        private static readonly TArticle Article = Activator.CreateInstance<TArticle>();
         public PageDownloadTask()
         {
         }
@@ -26,7 +27,7 @@ namespace HabraMiner.PageDownloadTasks
                 throw new Exception("Task not completed");
             }
 
-            return (TArticle) new TArticle().Parse(DownloadTask.Result);
+            return (TArticle)Article.Parse(DownloadTask.Result);
         }
     }
 }
