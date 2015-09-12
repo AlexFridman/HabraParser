@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using HabraMiner.Interfaces;
 using HtmlAgilityPack;
 
@@ -10,28 +11,27 @@ namespace HabraMiner
     {
         public Article Parse(string data)
         {
-            Article article = new Article();
-
             var html = LoadHtmlDocument(data);
 
-            HtmlNode articleNode = GetArticleNode(html);
+            var article = new Article();
+
+            var articleNode = GetArticleNode(html);
             article.Name = ExtractName(articleNode);
             article.Date = ExtractDate(articleNode);
-            article.Habs = ExtractHabs(articleNode);
+            article.Hubs = ExtractHabs(articleNode);
             article.Tags = ExtractTags(articleNode);
             article.Rating = ExtractRating(articleNode);
             article.Views = ExtractViews(articleNode);
             article.Favourites = ExtractFavourites(articleNode);
-            //TODO check other comments
             article.CodeComments = ExtractCodeComments(articleNode);
             article.Author = ExtractAuthor(articleNode);
 
             DeleteImageNodes(articleNode);
 
             DeleteCodeNodes(articleNode);
-            // this is html, not text
-            // TODO parse Text
             article.Text = articleNode.GetElementByAttributeValue("content html_format").InnerText;
+            
+            article.Comments = ExtractComments(articleNode);
 
             return article;
         }
@@ -61,12 +61,26 @@ namespace HabraMiner
 
         private static string ExtractAuthor(HtmlNode articleNode)
         {
-            return articleNode.GetElementByAttributeValue("author-info__name").InnerText;
+            return HtmlHelpers.ReplaceHtml(articleNode.GetElementByAttributeValue("author-info__name").InnerText);
         }
 
         private static List<string> ExtractCodeComments(HtmlNode articleNode)
         {
             return articleNode.GetElementsByAttributeValue("nginx").Select(n => n.InnerText).ToList();
+        }
+
+        private static List<string> ExtractComments(HtmlNode articleNode)
+        {
+            var nodes = articleNode.GetElementByAttributeValue("comments")
+                .GetElementsByAttributeValue("message html_format")
+                .SelectMany(n => n.ChildNodes).ToArray();
+
+            foreach (var node in nodes.Where(node => node.Name != "#text"))
+            {
+                node.Remove();
+            }
+            return nodes.Select(n => HtmlHelpers.ReplaceHtml(n.InnerText))
+                .Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
         }
 
         private static int ExtractFavourites(HtmlNode articleNode)
@@ -86,10 +100,9 @@ namespace HabraMiner
 
         private static ICollection<string> ExtractTags(HtmlNode articleNode)
         {
-            return 
-                articleNode.GetElementByAttributeValue("tags")
-                    .GetElementsByAttributeValue("tag")
-                    .Select(n => n.InnerText).ToList();
+            return
+                HtmlHelpers.ReplaceHtml(articleNode.GetElementByAttributeValue("tags")
+                    .InnerText).Split(new[] {", "}, StringSplitOptions.RemoveEmptyEntries).ToList();
         }
 
         private static ICollection<string> ExtractHabs(HtmlNode articleNode)
