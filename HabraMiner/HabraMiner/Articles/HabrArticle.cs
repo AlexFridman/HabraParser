@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using HabraMiner.Interfaces;
 using MongoDB.Bson;
 
 namespace HabraMiner.Articles
 {
     public class HabrArticle : ArticleBase
     {
+        public ObjectId Id { get; set; }
         public string Author { get; set; }
 
         public string Name { get; set; }
