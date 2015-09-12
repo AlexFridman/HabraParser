@@ -51,8 +51,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Article.cs" />
-    <Compile Include="IHabrArticleParser.cs" />
+    <Compile Include="ArticleParsers\ArticleParserBase.cs" />
+    <Compile Include="Articles\HabrArticle.cs" />
+    <Compile Include="Articles\BaseArticle.cs" />
+    <Compile Include="ArticleParsers\HabrArticleParser.cs" />
+    <Compile Include="HtmlHelpers.cs" />
+    <Compile Include="PageDownloadTasks\HabtDownloadTask.cs" />
+    <Compile Include="PageDownloadTasks\PageDownloadTaskBase.cs" />
+    <Compile Include="PageDTO.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PageLoader.cs" />
@@ -67,6 +73,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
