@@ -40,7 +40,7 @@ namespace HabraMiner.Articles
             return HabrParser.Parse(data);
         }
 
-        private class HabrParser
+        public class HabrParser
         {
             public static HabrArticle Parse(string data)
             {
@@ -50,7 +50,7 @@ namespace HabraMiner.Articles
 
                 var articleNode = GetArticleNode(html);
                 article.Name = ExtractName(articleNode);
-                article.Date = ExtractDate(articleNode);
+                article.Date = ExtractDate(articleNode); //TODO : обойти  nginx
                 article.Hubs = ExtractHabs(articleNode);
                 article.Tags = ExtractTags(articleNode);
                 article.Rating = ExtractRating(articleNode);
@@ -61,7 +61,7 @@ namespace HabraMiner.Articles
 
                 DeleteImageNodes(articleNode);
 
-                DeleteCodeNodes(articleNode);
+                //DeleteCodeNodes(articleNode);TODO : обойти  nginx
                 article.Text = articleNode.GetElementByClassName("content html_format").InnerText;
 
                 article.Comments = ExtractComments(articleNode);
@@ -99,7 +99,8 @@ namespace HabraMiner.Articles
 
             private static List<string> ExtractCodeComments(HtmlNode articleNode)
             {
-                return articleNode.GetElementsByClassName("nginx").Select(n => n.InnerText).ToList();
+                var nginx = articleNode.GetElementsByClassName("nginx");
+                return nginx?.Select(n => n.InnerText).ToList() ?? new List<string>();
             }
 
             private static List<string> ExtractComments(HtmlNode articleNode)
