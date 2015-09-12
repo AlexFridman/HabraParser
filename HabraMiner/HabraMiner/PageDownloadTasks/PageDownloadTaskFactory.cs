@@ -34,13 +34,20 @@ namespace HabraMiner.PageDownloadTasks
         {
             return new Task<string>(() =>
             {
+                Console.WriteLine("foo");
                 var client = new WebClient
                 {
                     Headers = {["User-Agent"] = userAgent},
                     Encoding = encoding
                 };
-
-                return client.DownloadString(uri);
+                try
+                {
+                    return client.DownloadString(uri);
+                }
+                catch (Exception ex)
+                {
+                    return "";
+                }
             });
         }
     }
