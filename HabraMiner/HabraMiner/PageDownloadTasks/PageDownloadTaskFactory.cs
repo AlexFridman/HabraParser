@@ -11,7 +11,7 @@ namespace HabraMiner.PageDownloadTasks
         public const string DefaultUserAgent = "";
 
         public static PageDownloadTask<TArticle> CreateDownloadTask<TArticle>(Uri uri, Encoding encoding,
-            string userAgent = DefaultUserAgent) where TArticle : ArticleBase
+            string userAgent = DefaultUserAgent) where TArticle : ArticleBase, new()
         {
             if (IsHabrUri(uri))
             {
