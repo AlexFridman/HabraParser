@@ -62,6 +62,7 @@
     <Compile Include="Articles\HabrArticle.cs" />
     <Compile Include="Articles\ArticleBase.cs" />
     <Compile Include="Exceptions\NotFoundException.cs" />
+    <Compile Include="Exceptions\NotParcebleArticleException.cs" />
     <Compile Include="HtmlHelpers.cs" />
     <Compile Include="Storage\IArticleSaver.cs" />
     <Compile Include="Storage\MongoArticleSaver.cs" />

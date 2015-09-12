@@ -49,22 +49,30 @@ namespace HabraMiner.Articles
                 {
                     throw new NotFoundException();
                 }
-                article.Name = ExtractName(articleNode);
-                article.Date = ExtractDate(articleNode); //TODO : обойти  nginx
-                article.Hubs = ExtractHabs(articleNode);
-                article.Tags = ExtractTags(articleNode);
-                article.Rating = ExtractRating(articleNode);
-                article.Views = ExtractViews(articleNode);
-                article.Favourites = ExtractFavourites(articleNode);
-                article.CodeComments = ExtractCodeComments(articleNode);
-                article.Author = ExtractAuthor(articleNode);
 
-                DeleteImageNodes(articleNode);
+                try
+                {
+                    article.Name = ExtractName(articleNode);
+                    article.Date = ExtractDate(articleNode); //TODO : обойти  nginx
+                    article.Hubs = ExtractHabs(articleNode);
+                    article.Tags = ExtractTags(articleNode);
+                    article.Rating = ExtractRating(articleNode);
+                    article.Views = ExtractViews(articleNode);
+                    article.Favourites = ExtractFavourites(articleNode);
+                    article.CodeComments = ExtractCodeComments(articleNode);
+                    article.Author = ExtractAuthor(articleNode);
 
-                //DeleteCodeNodes(articleNode);TODO : обойти  nginx
-                article.Text = articleNode.GetElementByClassName("content html_format").InnerText;
+                    DeleteImageNodes(articleNode);
 
-                article.Comments = ExtractComments(articleNode);
+                    //DeleteCodeNodes(articleNode);TODO : обойти  nginx
+                    article.Text = articleNode.GetElementByClassName("content html_format").InnerText;
+
+                    article.Comments = ExtractComments(articleNode);
+                }
+                catch (Exception)
+                {
+                    throw new NotParcebleArticleException();
+                }
 
                 return article;
             }

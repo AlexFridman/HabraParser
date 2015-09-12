@@ -75,9 +75,13 @@ namespace HabraMiner
             {
                 Logger.Error($"Unsuccessful post downloading (404) {uri.AbsolutePath}");
             }
+            catch (NotParcebleArticleException ex)
+            {
+                Logger.Error($"Unsuccessful parsing article at {uri.AbsolutePath}");
+            }
             catch (Exception ex)
             {
-                Logger.Error($"Unsuccessful post processing {uri.AbsolutePath}");
+                Logger.Error($"Unsuccessful postprocessing {uri.AbsolutePath}");
             }
         }
 
