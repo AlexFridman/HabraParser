@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using NLog.LayoutRenderers;
 
 namespace HabraMiner
 {
@@ -29,10 +30,24 @@ namespace HabraMiner
         {
             return node.GetElementsByTagName(tagName).FirstOrDefault();
         }
-
+        private static readonly Dictionary<string, int> MonthConverter =new Dictionary<string, int>
+        {
+            { "января",1},{ "февраля",2},{ "марта",3},{ "апреля",4},{ "мая",5},{ "июня",6},
+            { "июля",7},{ "августа",8},{ "сентября",9},{ "октября",10},{ "ноября",11},{ "декабря",12}
+        }; 
         public static DateTime ParseHabrFormatDate(string dateString)
         {
-            return DateTime.ParseExact(dateString, "dd MMMM yyyy в hh:mm", new CultureInfo("ru-RU"));
+            var digitsRegex = new Regex(@"\d{4}|\d{2}");
+            var nums = digitsRegex.Matches(dateString);
+            var monthRegex = new Regex(@" (\w+) ");
+            var month = monthRegex.Match(dateString);
+            var monthNumber = MonthConverter[month.Value.Trim()];
+            var yearNumber = int.Parse(nums[1].Value);
+            var dayNumber = int.Parse(nums[0].Value);
+            var hours = int.Parse(nums[2].Value);
+            var minutes = int.Parse(nums[3].Value);
+            return new DateTime(yearNumber,monthNumber,dayNumber,hours,minutes,0);
+            //return DateTime.ParseExact(dateString, "dd MMMM yyyy в hh:mm",CultureInfo.GetCultureInfo("ru-RU"));
         }
 
         public static string ReplaceLinks(string text)
