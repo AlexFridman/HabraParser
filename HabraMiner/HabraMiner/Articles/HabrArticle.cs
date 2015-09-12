@@ -64,12 +64,12 @@ namespace HabraMiner.Articles
 
                     DeleteImageNodes(articleNode);
 
-                    //DeleteCodeNodes(articleNode);TODO : обойти  nginx
+                    DeleteCodeNodes(articleNode);
                     article.Text = articleNode.GetElementByClassName("content html_format").InnerText;
 
                     article.Comments = ExtractComments(articleNode);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     throw new NotParcebleArticleException();
                 }
@@ -102,7 +102,12 @@ namespace HabraMiner.Articles
 
             private static string ExtractAuthor(HtmlNode articleNode)
             {
-                return HtmlHelpers.ReplaceHtml(articleNode.GetElementByClassName("author-info__name").InnerText);
+                var authorNode = articleNode.GetElementByClassName("author-info__name");
+                if (authorNode == null)
+                {
+                    return string.Empty;
+                }
+                return HtmlHelpers.ReplaceHtml(authorNode.InnerText);
             }
 
             private static List<string> ExtractCodeComments(HtmlNode articleNode)
@@ -113,7 +118,12 @@ namespace HabraMiner.Articles
 
             private static List<string> ExtractComments(HtmlNode articleNode)
             {
-                var nodes = articleNode.GetElementByClassName("comments")
+                var commentsNode = articleNode.GetElementByClassName("comments");
+                if (commentsNode == null)
+                {
+                    return new List<string>();
+                }
+                var nodes = commentsNode
                     .GetElementsByClassName("message html_format")
                     .SelectMany(n => n.ChildNodes).ToArray();
 
@@ -127,37 +137,61 @@ namespace HabraMiner.Articles
 
             private static int ExtractFavourites(HtmlNode articleNode)
             {
-                return int.Parse(articleNode.GetElementByClassName("favorite-wjt__counter js-favs_count").InnerText);
+                var favouritesNode = articleNode.GetElementByClassName("favorite-wjt__counter js-favs_count");
+                if (favouritesNode == null)
+                {
+                    return -1;
+                }
+                return int.Parse(favouritesNode.InnerText);
             }
 
             private static int ExtractViews(HtmlNode articleNode)
             {
-                return int.Parse(articleNode.GetElementByClassName("views-count_post").InnerText);
+                var viewsNode = articleNode.GetElementByClassName("views-count_post");
+                if (viewsNode == null)
+                {
+                    return -1;
+                }
+                return int.Parse(viewsNode.InnerText);
             }
 
             private static int ExtractRating(HtmlNode articleNode)
             {
-                return int.Parse(articleNode.GetElementByClassName("voting-wjt__counter-score js-score").InnerText);
+                var ratingNode = articleNode.GetElementByClassName("voting-wjt__counter-score js-score");
+                if (ratingNode == null)
+                {
+                    return -1;
+                }
+                return int.Parse(ratingNode.InnerText);
             }
 
             private static ICollection<string> ExtractTags(HtmlNode articleNode)
             {
-                return
-                    HtmlHelpers.ReplaceHtml(articleNode.GetElementByClassName("tags")
-                        .InnerText).Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var tagNode = articleNode.GetElementByClassName("tags");
+                if (tagNode == null)
+                {
+                    return new List<string>();
+                }
+                return HtmlHelpers.ReplaceHtml(tagNode
+                    .InnerText).Split(new[] {", "}, StringSplitOptions.RemoveEmptyEntries);
             }
 
             private static ICollection<string> ExtractHabs(HtmlNode articleNode)
             {
-
-                return articleNode.GetElementByClassName("hubs")
+                var hubNode = articleNode.GetElementByClassName("hubs");
+                if (hubNode == null)
+                {
+                    return new List<string>();
+                }
+                return hubNode
                         .ChildNodes.Where(n => n.Name == "a")
                         .Select(n => n.InnerText).ToList();
             }
 
             private static DateTime ExtractDate(HtmlNode articleNode)
             {
-                return HtmlHelpers.ParseHabrFormatDate(articleNode.GetElementByClassName("published").InnerText);
+                var publishedNode = articleNode.GetElementByClassName("published");
+                return publishedNode == null ? DateTime.MinValue : HtmlHelpers.ParseHabrFormatDate(publishedNode.InnerText);
             }
 
             private static string ExtractName(HtmlNode articleNode)

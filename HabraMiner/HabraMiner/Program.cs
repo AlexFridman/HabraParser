@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using HabraMiner.Articles;
 using HabraMiner.Exceptions;
+using HabraMiner.PageDownloadTasks;
+using HabraMiner.Storage;
 using NLog;
 
 namespace HabraMiner
@@ -14,16 +17,19 @@ namespace HabraMiner
     {
         private static void Main(string[] args)
         {
-            try{ 
-            var article = HabrArticle.HabrParser.Parse(File.ReadAllText(@"D:\temp\64931.htm"));
-            Console.WriteLine(article.Name);
-        }
+            var useragent =
+                "";
+           var saver = new MongoArticleSaver<HabrArticle>("localhost", 27017, "test_database", "habr");
+            var tasks =
+                Enumerable.Range(1, 200000)
+                    .Select(
+                        num =>
+                            PageDownloadTaskFactory.CreateDownloadTask<HabrArticle>(
+                                new Uri($"http://www.habrahabr.ru/post/{num}"), Encoding.UTF8, useragent));
 
-    catch (NotFoundException ex)
-            {
-                Console.WriteLine("foo");
-                //Logger.Error($"Unsuccessful post downloading (404) {uri.AbsolutePath}");
-            }
+            var loader = new PageLoader<HabrArticle>(tasks, article => saver.Save(article));
+            loader.RunAllDellayedTasks(500);
+            Thread.CurrentThread.Join();
         }
     }
 }

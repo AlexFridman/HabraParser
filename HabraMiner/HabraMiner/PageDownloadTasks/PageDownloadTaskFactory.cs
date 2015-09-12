@@ -4,13 +4,14 @@ using System.Text;
 using System.Threading.Tasks;
 using HabraMiner.Articles;
 using NLog;
+using NLog.Fluent;
 
 namespace HabraMiner.PageDownloadTasks
 {
     public class PageDownloadTaskFactory
     {
         public const string DefaultUserAgent = "";
-
+        private static readonly Logger Logger = LogManager.GetLogger("PageDownloadTaskFactory");
         public static PageDownloadTask<TArticle> CreateDownloadTask<TArticle>(Uri uri, Encoding encoding,
             string userAgent = DefaultUserAgent) where TArticle : ArticleBase, new()
         {
@@ -42,6 +43,7 @@ namespace HabraMiner.PageDownloadTasks
                 };
                 try
                 {
+                    Logger.Info($"Downloading {uri.AbsolutePath}");
                     return client.DownloadString(uri);
                 }
                 catch (Exception ex)

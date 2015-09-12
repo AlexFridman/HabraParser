@@ -13,7 +13,7 @@ namespace HabraMiner
     {
         public static ICollection<HtmlNode> GetElementsByClassName(this HtmlNode node, string attributeValue)
         {
-            return node.SelectNodes($"//*[contains(@class,'{attributeValue}')]");
+            return (ICollection<HtmlNode>) node.SelectNodes($"//*[contains(@class,'{attributeValue}')]") ?? new List<HtmlNode>();
         }
 
         public static HtmlNode GetElementByClassName(this HtmlNode node, string attributeValue)
@@ -23,7 +23,7 @@ namespace HabraMiner
 
         public static ICollection<HtmlNode> GetElementsByTagName(this HtmlNode node, string tagName)
         {
-            return node.SelectNodes($"//{tagName}");
+            return (ICollection<HtmlNode>) node.SelectNodes($"//{tagName}") ?? new List<HtmlNode>();
         }
 
         public static HtmlNode GetElementByTagName(this HtmlNode node, string tagName)
@@ -37,17 +37,15 @@ namespace HabraMiner
         }; 
         public static DateTime ParseHabrFormatDate(string dateString)
         {
-            var digitsRegex = new Regex(@"\d{4}|\d{2}");
-            var nums = digitsRegex.Matches(dateString);
-            var monthRegex = new Regex(@" (\w+) ");
-            var month = monthRegex.Match(dateString);
-            var monthNumber = MonthConverter[month.Value.Trim()];
-            var yearNumber = int.Parse(nums[1].Value);
-            var dayNumber = int.Parse(nums[0].Value);
-            var hours = int.Parse(nums[2].Value);
-            var minutes = int.Parse(nums[3].Value);
-            return new DateTime(yearNumber,monthNumber,dayNumber,hours,minutes,0);
-            //return DateTime.ParseExact(dateString, "dd MMMM yyyy в hh:mm",CultureInfo.GetCultureInfo("ru-RU"));
+            var whiteSpaceSplit = dateString.Split(new []{ " "}, StringSplitOptions.RemoveEmptyEntries);
+            var dayNumber = int.Parse(whiteSpaceSplit[0]);
+            var month = MonthConverter[whiteSpaceSplit[1]];
+            var year = int.Parse(whiteSpaceSplit[2]);
+            var colonSplit = whiteSpaceSplit[4].Split(':');
+            var hours = int.Parse(colonSplit[0]);
+            var minutes = int.Parse(colonSplit[1]);
+            return new DateTime(year,month,dayNumber,hours,minutes,0);
+            ////return DateTime.ParseExact(dateString, "dd MMMM yyyy в hh:mm",CultureInfo.GetCultureInfo("ru-RU"));
         }
 
         public static string ReplaceLinks(string text)

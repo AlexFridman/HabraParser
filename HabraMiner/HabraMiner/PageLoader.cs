@@ -12,7 +12,7 @@ namespace HabraMiner
 {
     public class PageLoader<TArticle> where TArticle:ArticleBase
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger Logger = LogManager.GetLogger("PageLoader");
         private readonly PageDownloadTask<TArticle>[] _tasks;
         private readonly Action<TArticle> _saveRoutine;
 
@@ -94,7 +94,6 @@ namespace HabraMiner
                 {
                     pageDownloadTask.DownloadTask.ContinueWith(TaskPostProcessing, pageDownloadTask);
                     pageDownloadTask.DownloadTask.Start();
-                    Logger.Info("Task runned");
                 }
                 catch (Exception ex)
                 {
