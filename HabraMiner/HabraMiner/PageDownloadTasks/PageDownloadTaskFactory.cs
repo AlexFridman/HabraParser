@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using HabraMiner.Articles;
 
 namespace HabraMiner.PageDownloadTasks
 {
@@ -10,18 +10,18 @@ namespace HabraMiner.PageDownloadTasks
     {
         public const string DefaultUserAgent = "";
 
-        public static PageDownloadTaskBase CreateDownloadTask(Uri uri, Encoding encoding,
-            string userAgent = DefaultUserAgent)
+        public static PageDownloadTask<TArticle> CreateDownloadTask<TArticle>(Uri uri, Encoding encoding,
+            string userAgent = DefaultUserAgent) where TArticle : ArticleBase
         {
             if (IsHabrUri(uri))
             {
-                return new HabrDownloadTask
+                return new PageDownloadTask<TArticle>
                 {
                     Uri = uri,
                     DownloadTask = CreateDownloadPageContentTask(uri, encoding, userAgent)
                 };
             }
-        return new HabrDownloadTask();
+            return null;
         }
 
         private static bool IsHabrUri(Uri uri)
@@ -29,13 +29,14 @@ namespace HabraMiner.PageDownloadTasks
             return true;
         }
 
-        private static Task<string> CreateDownloadPageContentTask(Uri uri, Encoding encoding, string userAgent, int delay = 0)
+        private static Task<string> CreateDownloadPageContentTask(Uri uri, Encoding encoding, string userAgent,
+            int delay = 0)
         {
             return new Task<string>(() =>
-            { 
+            {
                 var client = new WebClient
                 {
-                    Headers = {["User-Agent"] = userAgent },
+                    Headers = {["User-Agent"] = userAgent},
                     Encoding = encoding
                 };
 
