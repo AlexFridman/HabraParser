@@ -159,7 +159,12 @@ namespace HabraMiner.Articles
                     return int.MinValue;
                 }
                 var ratingStr = articleNode.InnerText.Replace('–', '-');
-                return int.Parse(ratingStr);
+                int rating;
+                if (int.TryParse(ratingStr, out rating))
+                {
+                    return rating;
+                }
+                return int.MinValue;
             }
 
             private static ICollection<string> ExtractTags(HtmlNode articleNode)
