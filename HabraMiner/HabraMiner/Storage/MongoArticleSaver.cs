@@ -1,11 +1,13 @@
-﻿using MongoDB.Driver;
+﻿using HabraMiner.Articles;
+using MongoDB.Driver;
+using NLog;
 
 namespace HabraMiner.Storage
 {
-    public class MongoArticleSaver<TArticle> : IArticleSaver<TArticle>
+    public class MongoArticleSaver<TArticle> : IArticleSaver<TArticle> where TArticle: ArticleBase
     {
         private readonly MongoCollection<TArticle> _collection;
-
+        private static Logger Logger = LogManager.GetLogger("Saver");
 
         public MongoArticleSaver(string adress, int port, string databaseName, string collectionName)
         {
@@ -17,6 +19,7 @@ namespace HabraMiner.Storage
         public void Save(TArticle article)
         {
             _collection.Save(article);
+            Logger.Info($"Saved {article.Uri.AbsolutePath}");
         }
     }
 }
