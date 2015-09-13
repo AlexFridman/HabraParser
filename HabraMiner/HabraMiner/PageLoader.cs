@@ -76,9 +76,10 @@ namespace HabraMiner
             {
                 if (workingTaskAwaiters.Count > simultaneousTasks)
                 {
-                    while (workingTaskAwaiters.All(a =>!a.IsCompleted))
+                    while (workingTaskAwaiters.Any(a =>!a.IsCompleted))
                     {
-                        Thread.SpinWait(10);
+                        Thread.SpinWait(100);
+                        //Thread.Sleep(5);
                     }
                     workingTaskAwaiters.Where(a => a.IsCompleted).ToList().ForEach(a => workingTaskAwaiters.Remove(a));
                 }
@@ -87,7 +88,7 @@ namespace HabraMiner
                     var awaiter = pageDownloadTask.DownloadTask.ContinueWith(TaskPostProcessing, pageDownloadTask,
                         TaskContinuationOptions.AttachedToParent |
                         TaskContinuationOptions.NotOnFaulted |
-                        TaskContinuationOptions.LongRunning|
+                        //TaskContinuationOptions.LongRunning|
                         TaskContinuationOptions.OnlyOnRanToCompletion).GetAwaiter();
 
                     workingTaskAwaiters.AddLast(awaiter);
@@ -99,7 +100,7 @@ namespace HabraMiner
                     Logger.Error("плохо");
                 }
 
-                Thread.Sleep(delay);
+                //Thread.Sleep(delay);
             }
         }
     }
