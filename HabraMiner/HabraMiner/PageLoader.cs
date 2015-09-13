@@ -14,12 +14,12 @@ namespace HabraMiner
     public class PageLoader<TArticle> where TArticle : ArticleBase
     {
         private static readonly Logger Logger = LogManager.GetLogger("PageLoader");
-        private readonly PageDownloadTask<TArticle>[] _tasks;
+        private readonly IEnumerable<PageDownloadTask<TArticle>> _tasks;
         private readonly Action<TArticle> _saveRoutine;
 
         public PageLoader(IEnumerable<PageDownloadTask<TArticle>> downloadTasks, Action<TArticle> saveRoutine)
         {
-            _tasks = downloadTasks.ToArray();
+            _tasks = downloadTasks;
             _saveRoutine = saveRoutine;
         }
 
@@ -71,17 +71,17 @@ namespace HabraMiner
 
         private void RunTasksWithDelay(IEnumerable<PageDownloadTask<TArticle>> tasks, int delay, int simultaneousTasks)
         {
-            var workingTaskAwaiters = new LinkedList<TaskAwaiter>();
+            var workingTaskAwaiters = new List<TaskAwaiter>();
             foreach (var pageDownloadTask in tasks)
             {
                 if (workingTaskAwaiters.Count > simultaneousTasks)
                 {
                     while (workingTaskAwaiters.Any(a =>!a.IsCompleted))
                     {
-                        Thread.SpinWait(100);
-                        //Thread.Sleep(5);
+                        //Thread.SpinWait(15);
+                        Thread.Sleep(10);
                     }
-                    workingTaskAwaiters.Where(a => a.IsCompleted).ToList().ForEach(a => workingTaskAwaiters.Remove(a));
+                    workingTaskAwaiters = workingTaskAwaiters.Where(a => !a.IsCompleted).ToList();
                 }
                 try
                 {
@@ -91,7 +91,7 @@ namespace HabraMiner
                         //TaskContinuationOptions.LongRunning|
                         TaskContinuationOptions.OnlyOnRanToCompletion).GetAwaiter();
 
-                    workingTaskAwaiters.AddLast(awaiter);
+                    workingTaskAwaiters.Add(awaiter);
 
                     pageDownloadTask.DownloadTask.Start();
                 }
