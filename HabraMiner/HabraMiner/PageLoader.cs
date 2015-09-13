@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using HabraMiner.Articles;
@@ -10,7 +11,7 @@ using NLog;
 
 namespace HabraMiner
 {
-    public class PageLoader<TArticle> where TArticle:ArticleBase
+    public class PageLoader<TArticle> where TArticle : ArticleBase
     {
         private static readonly Logger Logger = LogManager.GetLogger("PageLoader");
         private readonly PageDownloadTask<TArticle>[] _tasks;
@@ -23,9 +24,9 @@ namespace HabraMiner
         }
 
 
-        public void RunAllDellayedTasks(int delay)
+        public void RunAllDellayedTasks(int delay, int simultaneousTasks)
         {
-            Task.Run(() => RunTasksWithDelay(_tasks, delay));
+            Task.Run(() => RunTasksWithDelay(_tasks, delay, simultaneousTasks));
             var timeout = TimeSpan.FromMinutes(1);
             var tasks = _tasks.Select(t => t.DownloadTask).ToArray();
             var finishedTasksCount = 0;
@@ -57,10 +58,19 @@ namespace HabraMiner
 
         private void TaskPostProcessing(Task<string> task, object pPageDownloadTask)
         {
-            var pageDownloadTask = (PageDownloadTask<TArticle>) pPageDownloadTask;
+            string result = null;
+            try
+            {
+                result = task.Result;
+            }
+            catch (Exception)
+            {
+
+            }
+            var pageDownloadTask = (PageDownloadTask<TArticle>)pPageDownloadTask;
             var uri = pageDownloadTask.Uri;
 
-            if (task.Exception != null || string.IsNullOrEmpty(task.Result))
+            if (task.Exception != null || string.IsNullOrEmpty(result))
             {
                 Logger.Error($"Unsuccessful downloading {uri.AbsolutePath}");
             }
@@ -69,7 +79,7 @@ namespace HabraMiner
             {
 
                 var article = pageDownloadTask.ParceArticle();
-                _saveRoutine((TArticle) article);
+                _saveRoutine(article);
             }
             catch (NotFoundException ex)
             {
@@ -86,20 +96,36 @@ namespace HabraMiner
         }
 
 
-        private void RunTasksWithDelay(IEnumerable<PageDownloadTask<TArticle>> tasks, int delay)
+        private void RunTasksWithDelay(IEnumerable<PageDownloadTask<TArticle>> tasks, int delay, int simultaneousTasks)
         {
+            var workingTaskAwaiters = new LinkedList<TaskAwaiter>();
             foreach (var pageDownloadTask in tasks)
             {
+                if (workingTaskAwaiters.Count > simultaneousTasks)
+                {
+                    while (workingTaskAwaiters.All(a =>!a.IsCompleted))
+                    {
+                        Thread.SpinWait(10);
+                    }
+                    workingTaskAwaiters.Where(a => a.IsCompleted).ToList().ForEach(a => workingTaskAwaiters.Remove(a));
+                }
                 try
                 {
-                    pageDownloadTask.DownloadTask.ContinueWith(TaskPostProcessing, pageDownloadTask);
+                    var awaiter = pageDownloadTask.DownloadTask.ContinueWith(TaskPostProcessing, pageDownloadTask,
+                        TaskContinuationOptions.AttachedToParent |
+                        TaskContinuationOptions.NotOnFaulted |
+                        TaskContinuationOptions.LongRunning|
+                        TaskContinuationOptions.OnlyOnRanToCompletion).GetAwaiter();
+
+                    workingTaskAwaiters.AddLast(awaiter);
+
                     pageDownloadTask.DownloadTask.Start();
                 }
                 catch (Exception ex)
                 {
                     Logger.Error("пиздец");
                 }
-                
+
                 Thread.Sleep(delay);
             }
         }
