@@ -36,6 +36,21 @@ namespace HabraMiner.Articles
             return HabrParser.Parse(data);
         }
 
+        public override int GetNumber()
+        {
+            if (Uri != null)
+            {
+                var strNum = Uri.Segments[2];
+                int number;
+                if (int.TryParse(strNum, out number))
+                {
+                    return number;
+                }
+            }
+
+            return 0;
+        }
+
         public class HabrParser
         {
             public static HabrArticle Parse(string data)
