@@ -28,6 +28,7 @@ namespace HabraMiner.PageDownloadTasks
             }
             var parsed = Article.Parse(DownloadTask.Result);
             parsed.Uri = Uri;
+            parsed.Number = parsed.GetNumber();
             return (TArticle)parsed;
         }
     }

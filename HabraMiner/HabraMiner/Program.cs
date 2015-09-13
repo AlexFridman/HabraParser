@@ -14,9 +14,9 @@ namespace HabraMiner
         {
             var useragent =
                 "";
-           var saver = new MongoArticleSaver<HabrArticle>("localhost", 27017, "test_database", "habr");
+           var saver = new MongoArticleSaver<HabrArticle>("localhost", 27017, "test_database", "habrahabr");
             var tasks =
-                Enumerable.Range(25296, 200000)
+                Enumerable.Range(1, 200000)//30466
                     .Select(
                         num =>
                             PageDownloadTaskFactory.CreateDownloadTask<HabrArticle>(

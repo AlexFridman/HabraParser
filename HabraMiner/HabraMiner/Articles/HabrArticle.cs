@@ -26,7 +26,6 @@ namespace HabraMiner.Articles
         public ICollection<string> Tags { get; set; }
         public ICollection<string> Hubs { get; set; }
         public ICollection<string> Comments { get; set; }
-        public int Number { get; set; }
         public int Rating { get; set; }
         public int Views { get; set; }
         public int Favourites { get; set; }
