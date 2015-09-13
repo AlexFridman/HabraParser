@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using HabraMiner.Articles;
 using NLog;
-using NLog.Fluent;
 
 namespace HabraMiner.PageDownloadTasks
 {
@@ -31,8 +30,7 @@ namespace HabraMiner.PageDownloadTasks
             return true;
         }
 
-        private static Task<string> CreateDownloadPageContentTask(Uri uri, Encoding encoding, string userAgent,
-            int delay = 0)
+        private static Task<string> CreateDownloadPageContentTask(Uri uri, Encoding encoding, string userAgent)
         {
             return new Task<string>(() =>
             {
@@ -41,15 +39,19 @@ namespace HabraMiner.PageDownloadTasks
                     Headers = {["User-Agent"] = userAgent},
                     Encoding = encoding
                 };
+                string result;
                 try
                 {
                     Logger.Info($"Downloading {uri.AbsolutePath}");
-                    return client.DownloadString(uri);
+                    result=  client.DownloadString(uri);
+
                 }
                 catch (Exception ex)
                 {
+                    //Logger.Fatal($"404 {uri.AbsolutePath}");
                     return "";
                 }
+                return result;
             });
         }
     }
