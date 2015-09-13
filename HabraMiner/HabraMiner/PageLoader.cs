@@ -27,33 +27,6 @@ namespace HabraMiner
         public void RunAllDellayedTasks(int delay, int simultaneousTasks)
         {
             Task.Run(() => RunTasksWithDelay(_tasks, delay, simultaneousTasks));
-            var timeout = TimeSpan.FromMinutes(1);
-            var tasks = _tasks.Select(t => t.DownloadTask).ToArray();
-            var finishedTasksCount = 0;
-            while (finishedTasksCount < tasks.Length)
-            {
-                Task.WaitAny(tasks, timeout);
-
-                var completedTasks = GetCompletedTasks();
-                var faultedTasks = GetFaultedTasks();
-
-
-                finishedTasksCount += (completedTasks.Length + faultedTasks.Length);
-            }
-        }
-
-        private PageDownloadTask<TArticle>[] GetCompletedTasks()
-        {
-            var completedTasks = _tasks.Where(t => t.DownloadTask.IsCompleted);
-
-            return completedTasks.ToArray();
-        }
-
-        private PageDownloadTask<TArticle>[] GetFaultedTasks()
-        {
-            var faultedTasks = _tasks.Where(t => t.DownloadTask.IsFaulted);
-
-            return faultedTasks.ToArray();
         }
 
         private void TaskPostProcessing(Task<string> task, object pPageDownloadTask)
@@ -123,7 +96,7 @@ namespace HabraMiner
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("пиздец");
+                    Logger.Error("плохо");
                 }
 
                 Thread.Sleep(delay);
