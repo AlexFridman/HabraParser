@@ -7,5 +7,7 @@ namespace HabraMiner.Articles
         public Uri Uri { get; set; }
 
         public abstract ArticleBase Parse(string data);
+
+        public abstract int GetNumber();
     }
 }
