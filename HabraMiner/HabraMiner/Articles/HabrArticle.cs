@@ -156,9 +156,10 @@ namespace HabraMiner.Articles
                 var ratingNode = articleNode.GetElementByClassName("voting-wjt__counter-score js-score");
                 if (ratingNode == null)
                 {
-                    return -1;
+                    return int.MinValue;
                 }
-                return int.Parse(ratingNode.InnerText);
+                var ratingStr = articleNode.InnerText.Replace('–', '-');
+                return int.Parse(ratingStr);
             }
 
             private static ICollection<string> ExtractTags(HtmlNode articleNode)
