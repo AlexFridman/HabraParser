@@ -103,11 +103,7 @@ namespace HabraMiner.Articles
             private static string ExtractAuthor(HtmlNode articleNode)
             {
                 var authorNode = articleNode.GetElementByClassName("author-info__name");
-                if (authorNode == null)
-                {
-                    return string.Empty;
-                }
-                return HtmlHelpers.ReplaceHtml(authorNode.InnerText);
+                return authorNode == null ? string.Empty : HtmlHelpers.ReplaceHtml(authorNode.InnerText);
             }
 
             private static List<string> ExtractCodeComments(HtmlNode articleNode)
